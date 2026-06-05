@@ -4,6 +4,7 @@ import {
   generateQuestions,
   generateSummary,
   generateTerms,
+  openaiModel,
 } from "@/lib/openai";
 import { AppError, toErrorMessage } from "@/lib/errors";
 import type {
@@ -64,19 +65,22 @@ export async function POST(req: Request) {
   }
 }
 
-/** baseURL/model 오설정 가능성을 사용자 안내에 반영 */
+/** 401/모델/연결 오류 시 환경변수 확인 안내를 덧붙인다 */
 function buildErrorMessage(err: unknown): string {
   const base = toErrorMessage(err, "AI 생성 중 오류가 발생했습니다.");
   const lower = base.toLowerCase();
   const looksLikeConfig =
     lower.includes("model") ||
+    lower.includes("401") ||
+    lower.includes("인증") ||
     lower.includes("not found") ||
     lower.includes("enotfound") ||
     lower.includes("fetch failed") ||
     lower.includes("connect") ||
     lower.includes("404");
   if (looksLikeConfig) {
-    return `${base}\n(OPENAI_BASE_URL 또는 OPENAI_MODEL 설정이 올바른지 확인해 주세요.)`;
+    // 모델명은 lib/openai.ts 의 openaiModel() 을 사용 (라우트에서 하드코딩하지 않음)
+    return `${base}\n(현재 모델: ${openaiModel()} — .env.local 의 OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL 값을 확인해 주세요.)`;
   }
   return base;
 }

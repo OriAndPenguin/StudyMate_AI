@@ -11,10 +11,10 @@ export interface GeneratorMeta {
 }
 
 export const GENERATORS: GeneratorMeta[] = [
-  { kind: "summary", action: "요약노트 생성", tab: "요약노트", icon: "📝" },
-  { kind: "terms", action: "핵심 용어 정리", tab: "용어정리", icon: "📖" },
-  { kind: "questions", action: "예상문제 생성", tab: "문제풀이", icon: "❓" },
-  { kind: "flashcards", action: "플래시카드 생성", tab: "복습카드", icon: "🃏" },
+  { kind: "summary", action: "요약노트 생성", tab: "요약", icon: "📝" },
+  { kind: "terms", action: "핵심 용어 정리", tab: "용어", icon: "📖" },
+  { kind: "questions", action: "예상문제 생성", tab: "문제", icon: "❓" },
+  { kind: "flashcards", action: "플래시카드 생성", tab: "카드", icon: "🃏" },
 ];
 
 /** 해당 종류의 결과가 이미 생성되어 있는지 */

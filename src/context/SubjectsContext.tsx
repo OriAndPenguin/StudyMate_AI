@@ -49,8 +49,11 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
     setSubjects(storage.listSubjects());
   }, []);
 
+  // 렌더 중에는 state(subjects)만 참조한다.
+  // storage(localStorage) 를 렌더 중 읽으면 서버(빈 값)와 클라이언트(실제 값)의
+  // 첫 렌더 결과가 달라져 hydration mismatch 가 발생하므로 폴백을 두지 않는다.
   const getById = useCallback(
-    (id: string) => subjects.find((s) => s.id === id) ?? storage.getSubject(id),
+    (id: string) => subjects.find((s) => s.id === id),
     [subjects]
   );
 

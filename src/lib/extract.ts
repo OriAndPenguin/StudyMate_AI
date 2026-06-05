@@ -34,14 +34,22 @@ async function extractPdf(buffer: ArrayBuffer): Promise<ExtractResponse> {
   try {
     const { extractText: pdfExtract, getDocumentProxy } = await import("unpdf");
     const pdf = await getDocumentProxy(new Uint8Array(buffer));
-    const { text } = await pdfExtract(pdf, { mergePages: true });
-    const cleaned = (text ?? "").trim();
+    // 페이지 단위로 추출해 [p.N] 마커를 붙인다 (AI 가 페이지 번호를 유지하도록)
+    const { text } = await pdfExtract(pdf, { mergePages: false });
+    const pages = Array.isArray(text) ? text : [String(text ?? "")];
+
+    const parts = pages
+      .map((t, i) => ({ n: i + 1, body: (t ?? "").replace(/[ \t]+\n/g, "\n").trim() }))
+      .filter((p) => p.body.length > 0)
+      .map((p) => `[p.${p.n}]\n${p.body}`);
+
+    const cleaned = parts.join("\n\n").trim();
 
     if (cleaned.length === 0) {
       return { status: "extracted", extractedText: "", notice: SCAN_NOTICE };
     }
     // 텍스트가 비정상적으로 짧으면 스캔 PDF 가능성 안내
-    const notice = cleaned.length < 30 ? SCAN_NOTICE : undefined;
+    const notice = cleaned.replace(/\[p\.\d+\]/g, "").trim().length < 30 ? SCAN_NOTICE : undefined;
     return { status: "extracted", extractedText: cleaned, notice };
   } catch (err) {
     return {

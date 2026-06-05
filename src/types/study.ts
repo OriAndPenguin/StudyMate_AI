@@ -50,18 +50,26 @@ export interface SubjectInput {
 /* 1) 요약노트 (SummaryNote)                                           */
 /* ------------------------------------------------------------------ */
 
+/** 단원 단위 메타데이터 (목차/네비게이션용, 선택) */
+export interface SummarySection {
+  title: string;
+  /** 페이지 범위 (예: "p.2~p.11") */
+  pageRange?: string;
+  summary?: string;
+}
+
+/**
+ * 시험 대비 Markdown 요약노트.
+ * - markdownContent 가 핵심: 화면에서 Markdown 으로 렌더링한다.
+ * - sections 는 보조 메타데이터(선택).
+ */
 export interface SummaryNote {
-  /** 전체 핵심 요약 (문단/불릿) */
-  overview: string[];
-  /** 시험 출제 가능 포인트 */
-  examPoints: string[];
-  /** 암기 체크리스트 */
-  memorizeChecklist: string[];
-  /** 헷갈리기 쉬운 개념 */
-  confusingConcepts: {
-    concept: string;
-    clarification: string;
-  }[];
+  title?: string;
+  /** 화면 렌더링용 Markdown 본문 (# 요약 으로 시작) */
+  markdownContent?: string;
+  sections?: SummarySection[];
+  /** JSON 파싱 실패 시 원문 보존 (fallback 렌더링용) */
+  raw?: string;
 }
 
 /* ------------------------------------------------------------------ */

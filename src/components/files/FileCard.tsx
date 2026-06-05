@@ -24,14 +24,21 @@ function timeOf(iso: string): string {
 
 export default function FileCard({
   file,
-  selected,
+  selected = false,
   onSelect,
   onDelete,
+  actionLabel,
+  onAction,
+  actionDisabled,
 }: {
   file: StudyFile;
-  selected: boolean;
-  onSelect: () => void;
+  selected?: boolean;
+  onSelect?: () => void;
   onDelete: () => void;
+  /** 추가 액션 버튼 (예: "이 자료로 학습하기") */
+  actionLabel?: string;
+  onAction?: () => void;
+  actionDisabled?: boolean;
 }) {
   const status = STATUS_META[file.status];
   const preview = file.extractedText?.trim().slice(0, 140);
@@ -39,7 +46,7 @@ export default function FileCard({
   return (
     <div
       onClick={onSelect}
-      className={`cursor-pointer rounded-xl border p-3 transition ${
+      className={`rounded-xl border p-3 transition ${onSelect ? "cursor-pointer" : ""} ${
         selected
           ? "border-brand-400 bg-brand-50 ring-2 ring-brand-100"
           : "border-slate-200 bg-white hover:border-brand-300"
@@ -99,6 +106,20 @@ export default function FileCard({
 
       {file.status === "extracting" && (
         <p className="mt-2 text-xs text-amber-600">자료를 읽는 중입니다…</p>
+      )}
+
+      {/* 액션 버튼 (예: 학습하기) */}
+      {actionLabel && onAction && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onAction();
+          }}
+          disabled={actionDisabled}
+          className="mt-3 w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+        >
+          {actionLabel}
+        </button>
       )}
     </div>
   );

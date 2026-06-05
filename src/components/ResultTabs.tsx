@@ -11,31 +11,35 @@ export default function ResultTabs({
   artifacts,
   activeTab,
   onTabChange,
+  onSummaryPageClick,
 }: {
   artifacts: StudyArtifacts;
   activeTab: GenerationKind;
   onTabChange: (kind: GenerationKind) => void;
+  /** 요약의 페이지 토큰 클릭 시 (왼쪽 원본 이동) */
+  onSummaryPageClick?: (page: number) => void;
 }) {
   return (
     <div>
-      {/* 가로 탭 */}
-      <div className="flex gap-1 border-b border-slate-200">
-        {GENERATORS.map(({ kind, tab }) => {
+      {/* 가로 pill 탭 */}
+      <div className="flex flex-wrap gap-2">
+        {GENERATORS.map(({ kind, tab, icon }) => {
           const active = activeTab === kind;
           const generated = hasArtifact(artifacts, kind);
           return (
             <button
               key={kind}
               onClick={() => onTabChange(kind)}
-              className={`relative -mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${
                 active
-                  ? "border-brand-600 text-brand-700"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "border-slate-900 bg-slate-900 text-white shadow-sm"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
+              <span className="text-[15px] leading-none">{icon}</span>
               {tab}
-              {generated && (
-                <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-brand-500 align-middle" />
+              {!active && generated && (
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
               )}
             </button>
           );
@@ -46,7 +50,7 @@ export default function ResultTabs({
       <div className="mt-5">
         {activeTab === "summary" &&
           (artifacts.summary ? (
-            <SummaryView data={artifacts.summary} />
+            <SummaryView data={artifacts.summary} onPageClick={onSummaryPageClick} />
           ) : (
             <ResultEmpty kind="summary" />
           ))}
@@ -81,7 +85,7 @@ function ResultEmpty({ kind }: { kind: GenerationKind }) {
   return (
     <div className="rounded-2xl border border-dashed border-brand-200 bg-white p-12 text-center text-sm text-slate-400">
       아직 결과가 없어요. <br />
-      오른쪽의 <span className="font-semibold text-brand-600">{meta?.action}</span> 버튼을 눌러 만들어 보세요.
+      위에서 <span className="font-semibold text-brand-600">{meta?.tab}</span> 을(를) 선택해 생성해 보세요.
     </div>
   );
 }

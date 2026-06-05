@@ -6,13 +6,14 @@ import { usePathname, useParams, useRouter } from "next/navigation";
 import { useSubjects } from "@/context/SubjectsContext";
 import NewSubjectModal from "@/components/NewSubjectModal";
 import { daysUntil } from "@/lib/format";
+import { deleteBlob } from "@/lib/fileBlobs";
 import type { SubjectInput } from "@/types/study";
 
 export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams<{ id?: string }>();
-  const { subjects, ready, create, remove } = useSubjects();
+  const { subjects, ready, getById, create, remove } = useSubjects();
   const [modalOpen, setModalOpen] = useState(false);
 
   const activeId = params?.id;
@@ -29,6 +30,8 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     e.preventDefault();
     e.stopPropagation();
     if (!confirm("이 과목을 삭제할까요? 생성된 결과도 함께 사라집니다.")) return;
+    // 저장된 원본 파일(IndexedDB)도 함께 정리
+    getById(id)?.files.forEach((f) => void deleteBlob(f.id));
     remove(id);
     if (activeId === id) router.push("/");
   }

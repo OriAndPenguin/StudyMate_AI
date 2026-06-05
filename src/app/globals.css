@@ -32,3 +32,170 @@
 .flip-back {
   transform: rotateY(180deg);
 }
+
+/* ── Markdown 요약노트 (.md-note) ── */
+.md-note {
+  color: #334155; /* slate-700 */
+  font-size: 15px;
+  line-height: 1.75;
+}
+.md-note > :first-child {
+  margin-top: 0;
+}
+.md-note h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a; /* slate-900 */
+  margin: 0 0 0.75rem;
+}
+.md-note h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 1.9rem 0 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e2e8f0; /* slate-200 */
+}
+.md-note h3 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #1e293b; /* slate-800 */
+  margin: 1.25rem 0 0.4rem;
+}
+.md-note h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 1rem 0 0.3rem;
+}
+.md-note p {
+  margin: 0.5rem 0;
+}
+.md-note strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+.md-note a {
+  color: #0284c7; /* brand-600 */
+  text-decoration: underline;
+}
+.md-note hr {
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.6rem 0;
+}
+.md-note ul,
+.md-note ol {
+  margin: 0.5rem 0;
+  padding-left: 1.3rem;
+}
+.md-note ul {
+  list-style: disc;
+}
+.md-note ol {
+  list-style: decimal;
+}
+.md-note li {
+  margin: 0.25rem 0;
+}
+.md-note li::marker {
+  color: #38bdf8; /* brand-400 */
+}
+/* 체크리스트 (- [ ]) */
+.md-note ul.contains-task-list {
+  list-style: none;
+  padding-left: 0.2rem;
+}
+.md-note li.task-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.md-note li.task-list-item::marker {
+  content: "";
+}
+.md-note li.task-list-item input[type="checkbox"] {
+  margin-top: 0.35rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0284c7;
+}
+/* 인용구 = 시험 포인트 */
+.md-note blockquote {
+  margin: 0.8rem 0;
+  padding: 0.6rem 0.9rem;
+  border-left: 4px solid #38bdf8; /* brand-400 */
+  background: #f0f9ff; /* brand-50 */
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #334155;
+}
+.md-note blockquote p {
+  margin: 0.15rem 0;
+}
+.md-note blockquote p:first-child {
+  font-weight: 700;
+  color: #0369a1; /* brand-700 */
+}
+/* 코드 */
+.md-note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  background: #f1f5f9; /* slate-100 */
+  color: #0f172a;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+}
+/* 클릭 가능한 페이지 링크 (요약 → 원본 이동) */
+.md-page-link {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82em;
+  font-weight: 700;
+  color: #0369a1; /* brand-700 */
+  background: #e0f2fe; /* brand-100 */
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.md-page-link:hover {
+  border-color: #38bdf8; /* brand-400 */
+  background: #bae6fd; /* brand-200 */
+}
+.md-note pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.9rem;
+  border-radius: 0.6rem;
+  overflow-x: auto;
+  margin: 0.8rem 0;
+}
+.md-note pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+/* 표 */
+.md-note table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.9rem 0;
+  font-size: 0.92em;
+  display: block;
+  overflow-x: auto;
+}
+.md-note th,
+.md-note td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+.md-note th {
+  background: #f0f9ff; /* brand-50 */
+  font-weight: 700;
+  color: #0f172a;
+}
+.md-note tr:nth-child(even) td {
+  background: #f8fafc; /* slate-50 */
+}

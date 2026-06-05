@@ -1,58 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import FileUploadPanel from "@/components/files/FileUploadPanel";
-import GeneratePanel from "@/components/GeneratePanel";
-import ResultTabs from "@/components/ResultTabs";
+import { useParams, useRouter } from "next/navigation";
+import Uploader from "@/components/files/Uploader";
+import FileCard from "@/components/files/FileCard";
 import { useSubjects } from "@/context/SubjectsContext";
-import { useGenerate } from "@/hooks/useGenerate";
-import { MIN_SOURCE_LENGTH, resolveSource } from "@/lib/files";
-import type { GenerationKind } from "@/types/study";
+import { MIN_SOURCE_LENGTH } from "@/lib/files";
+import { deleteBlob } from "@/lib/fileBlobs";
 
-export default function SubjectDetailPage() {
+export default function SubjectUploadPage() {
   const { id } = useParams<{ id: string }>();
-  const { ready, getById, updateInfo } = useSubjects();
+  const router = useRouter();
+  const { ready, getById, removeFile, updateInfo } = useSubjects();
 
   const subject = getById(id);
-
   const [manualText, setManualText] = useState<string | null>(null);
-  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<GenerationKind>("summary");
 
-  // 직접 입력 텍스트는 최초 1회만 저장값으로 초기화
   useEffect(() => {
     if (subject && manualText === null) setManualText(subject.sourceText ?? "");
   }, [subject, manualText]);
-
-  // 분석 대상 텍스트 결정 (파일 선택 → 전체 파일 → 직접 입력)
-  const resolved = subject
-    ? resolveSource(subject, selectedFileId)
-    : { text: "", label: "자료 없음", origin: "none" as const };
-
-  const canGenerate = resolved.text.trim().length >= MIN_SOURCE_LENGTH;
-  const hint =
-    resolved.origin === "none"
-      ? "공부자료를 업로드하거나 직접 텍스트를 입력해 주세요."
-      : !canGenerate
-      ? "분석할 텍스트가 부족합니다."
-      : undefined;
-
-  // 생성 시점의 최신 텍스트 보장
-  const sourceRef = useRef("");
-  sourceRef.current = resolved.text;
-
-  const { statuses, error, busy, generate, generateAll } = useGenerate({
-    subjectId: id,
-    getSourceText: () => sourceRef.current,
-    subjectTitle: subject?.title ?? "",
-    onGenerated: (kind) => setActiveTab(kind),
-  });
-
-  function persistManual() {
-    if (subject && manualText !== null) updateInfo(subject.id, { sourceText: manualText });
-  }
 
   if (ready && !subject) {
     return (
@@ -64,98 +31,137 @@ export default function SubjectDetailPage() {
       </div>
     );
   }
-
   if (!subject) {
-    return (
-      <div className="px-6 py-20 text-center text-sm text-slate-400 lg:px-10">불러오는 중…</div>
-    );
+    return <div className="px-6 py-20 text-center text-sm text-slate-400">불러오는 중…</div>;
   }
 
+  const files = subject.files;
+  const extractedCount = files.filter((f) => f.status === "extracted" && f.extractedText).length;
   const text = manualText ?? "";
+  const manualReady = text.trim().length >= MIN_SOURCE_LENGTH;
+
+  function goStudy(fileId?: string) {
+    router.push(fileId ? `/subjects/${id}/study?file=${fileId}` : `/subjects/${id}/study`);
+  }
+  function persistManual() {
+    if (manualText !== null) updateInfo(id, { sourceText: manualText });
+  }
 
   return (
-    <div className="lg:flex lg:h-screen lg:flex-col">
-      {/* 과목 헤더 */}
-      <header className="border-b border-slate-200 bg-white px-6 py-4 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <Link href="/" className="text-xs text-slate-400 hover:text-brand-600">
-              ← 대시보드
-            </Link>
-            <h1 className="truncate text-xl font-extrabold tracking-tight text-slate-900">
-              {subject.title}
-            </h1>
-            {subject.description && (
-              <p className="truncate text-sm text-slate-500">{subject.description}</p>
-            )}
-          </div>
-          {subject.examDate && (
-            <span className="shrink-0 rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
-              시험일 {subject.examDate}
-            </span>
+    <div className="mx-auto max-w-4xl px-6 py-8 lg:px-10 lg:py-10">
+      <Link href="/" className="text-xs text-slate-400 hover:text-brand-600">
+        ← 대시보드
+      </Link>
+
+      <header className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">{subject.title}</h1>
+          {subject.description && (
+            <p className="text-sm text-slate-500">{subject.description}</p>
           )}
         </div>
+        {subject.examDate && (
+          <span className="rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
+            시험일 {subject.examDate}
+          </span>
+        )}
       </header>
 
-      {/* 좌우 분할 */}
-      <div className="lg:flex lg:min-h-0 lg:flex-1">
-        {/* 왼쪽: 공부자료 (35%) */}
-        <section className="border-b border-slate-200 p-5 lg:w-[35%] lg:overflow-y-auto lg:border-b-0 lg:border-r">
-          <FileUploadPanel
-            subject={subject}
-            selectedFileId={selectedFileId}
-            onSelectFile={setSelectedFileId}
-            manualText={text}
-            onManualChange={setManualText}
-            onManualBlur={persistManual}
-          />
-        </section>
+      <p className="mt-4 text-sm text-slate-500">
+        ① 공부자료를 업로드해 텍스트 추출이 끝나면, ② 자료를 선택해 학습 화면으로 이동합니다.
+      </p>
 
-        {/* 오른쪽: AI 학습 결과 (65%) */}
-        <section className="p-6 lg:w-[65%] lg:overflow-y-auto lg:p-8">
-          {/* 분석 대상 표시 */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-400">분석 기준</span>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {resolved.origin === "file"
-                ? `📄 ${resolved.label}`
-                : resolved.origin === "all-files"
-                ? "📚 과목 전체 자료"
-                : resolved.origin === "manual"
-                ? "✍️ 직접 입력 텍스트"
-                : "자료 없음"}
-            </span>
-          </div>
+      {/* 업로드 */}
+      <section className="mt-5">
+        <Uploader subjectId={id} />
+      </section>
 
-          {/* 생성 버튼 */}
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
-            <GeneratePanel
-              variant="bar"
-              artifacts={subject.artifacts}
-              statuses={statuses}
-              busy={busy}
-              canGenerate={canGenerate}
-              hint={hint}
-              onGenerate={generate}
-              onGenerateAll={generateAll}
-            />
-            {error && (
-              <p className="mt-3 whitespace-pre-line rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-                ⚠️ {error}
-              </p>
-            )}
+      {/* 과목 전체로 학습 */}
+      {extractedCount > 0 && (
+        <div className="mt-5 flex items-center justify-between rounded-2xl border border-brand-200 bg-brand-50 p-4">
+          <div>
+            <p className="text-sm font-semibold text-slate-800">
+              추출 완료된 자료 {extractedCount}개
+            </p>
+            <p className="text-xs text-slate-500">모든 자료를 합쳐서 학습할 수 있어요.</p>
           </div>
+          <button
+            onClick={() => goStudy()}
+            className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+          >
+            과목 전체로 학습하기 →
+          </button>
+        </div>
+      )}
 
-          {/* 결과 (학습 노트) */}
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-card lg:p-6">
-            <ResultTabs
-              artifacts={subject.artifacts}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            />
+      {/* 파일 목록 */}
+      <section className="mt-6">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+          업로드한 자료
+        </h2>
+        {files.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-400">
+            공부자료를 업로드해 주세요.
           </div>
-        </section>
-      </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {files.map((f) => {
+              const canStudy = f.status === "extracted" && !!f.extractedText;
+              return (
+                <FileCard
+                  key={f.id}
+                  file={f}
+                  onDelete={() => {
+                    removeFile(id, f.id);
+                    void deleteBlob(f.id);
+                  }}
+                  actionLabel={
+                    f.status === "extracted"
+                      ? "이 자료로 학습하기 →"
+                      : f.status === "extracting"
+                      ? "추출 중…"
+                      : f.status === "failed"
+                      ? "추출 실패 — 학습 불가"
+                      : "대기 중"
+                  }
+                  onAction={() => goStudy(f.id)}
+                  actionDisabled={!canStudy}
+                />
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* 직접 텍스트 입력 (파일 없이 학습) */}
+      <section className="mt-8 border-t border-slate-100 pt-6">
+        <h2 className="mb-2 text-sm font-semibold text-slate-700">✍️ 직접 텍스트로 학습</h2>
+        <p className="mb-2 text-xs text-slate-400">
+          파일 없이 텍스트만으로 학습하려면 여기에 붙여넣으세요. (파일이 있으면 파일이 우선)
+        </p>
+        <textarea
+          value={text}
+          onChange={(e) => setManualText(e.target.value)}
+          onBlur={persistManual}
+          rows={5}
+          placeholder="강의 노트나 정리한 텍스트를 붙여넣어 주세요."
+          className="w-full resize-y rounded-xl border border-slate-200 bg-white p-3 text-sm leading-relaxed outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+        />
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-xs text-slate-400">{text.length}자</span>
+          <button
+            onClick={() => {
+              persistManual();
+              goStudy();
+            }}
+            disabled={!manualReady || extractedCount > 0}
+            className="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+            title={extractedCount > 0 ? "추출된 파일이 있어 파일 기준으로 학습합니다" : undefined}
+          >
+            텍스트로 학습하기 →
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useSubjects } from "@/context/SubjectsContext";
 import { parseFetchError, toErrorMessage } from "@/lib/errors";
-import { GENERATORS } from "@/lib/generators";
 import type {
   GenerateResponse,
   GenerationKind,
@@ -91,19 +90,5 @@ export function useGenerate(params: {
     setBusy(false);
   }
 
-  /** 전체 생성 — 순차 실행으로 버튼별 진행 상태를 보여준다 */
-  async function generateAll() {
-    if (busy) return;
-    const sourceText = getSourceText();
-    setError(null);
-    if (!validate(sourceText)) return;
-    setBusy(true);
-    for (const { kind } of GENERATORS) {
-      const ok = await runOne(kind, sourceText);
-      if (!ok) break; // 하나라도 실패하면 중단하고 에러 표시
-    }
-    setBusy(false);
-  }
-
-  return { statuses, error, busy, generate, generateAll, setError };
+  return { statuses, error, busy, generate, setError };
 }
