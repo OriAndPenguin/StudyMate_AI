@@ -55,6 +55,14 @@ const DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5";
 
 type AiProvider = "openai" | "anthropic";
 
+/**
+ * 환경변수 값 정리 — 앞뒤 공백/따옴표 제거.
+ * (Vercel 등에서 값에 따옴표를 붙여 넣는 실수가 흔해, sk-ant 판별이 깨지는 것을 방지)
+ */
+function sanitizeEnv(raw?: string): string {
+  return (raw ?? "").trim().replace(/^['"]+|['"]+$/g, "").trim();
+}
+
 /** API Key 접두사로 제공자 판별 (sk-ant... → Anthropic, 그 외 → OpenAI 호환) */
 function detectProvider(apiKey: string): AiProvider {
   return apiKey.startsWith("sk-ant") ? "anthropic" : "openai";
@@ -75,8 +83,8 @@ function resolveModel(provider: AiProvider, envModel?: string): string {
  * API Key 접두사로 제공자를 판별해 제공자에 맞는 기본/오버라이드 모델을 돌려준다.
  */
 export function openaiModel(): string {
-  const apiKey = process.env.OPENAI_API_KEY?.trim() ?? "";
-  return resolveModel(detectProvider(apiKey), process.env.OPENAI_MODEL);
+  const apiKey = sanitizeEnv(process.env.OPENAI_API_KEY);
+  return resolveModel(detectProvider(apiKey), sanitizeEnv(process.env.OPENAI_MODEL));
 }
 
 const AUTH_ERROR_MESSAGE =
@@ -92,7 +100,7 @@ interface AiConfig {
 
 /** 환경변수를 읽어 설정을 구성한다. (apiKey 없으면 명확한 에러) */
 function readConfig(): AiConfig {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const apiKey = sanitizeEnv(process.env.OPENAI_API_KEY);
   if (!apiKey) {
     throw new AppError(
       "OPENAI_API_KEY가 설정되어 있지 않습니다. 프로젝트 루트의 .env.local 에 키를 추가한 뒤 개발 서버를 재시작해 주세요.",
@@ -100,8 +108,8 @@ function readConfig(): AiConfig {
     );
   }
   const provider = detectProvider(apiKey);
-  const baseURL = process.env.OPENAI_BASE_URL?.trim() || undefined;
-  const model = resolveModel(provider, process.env.OPENAI_MODEL);
+  const baseURL = sanitizeEnv(process.env.OPENAI_BASE_URL) || undefined;
+  const model = resolveModel(provider, sanitizeEnv(process.env.OPENAI_MODEL));
   const transport = process.env.OPENAI_TRANSPORT?.trim() === "fetch" ? "fetch" : "sdk";
   return { apiKey, provider, baseURL, model, transport };
 }
