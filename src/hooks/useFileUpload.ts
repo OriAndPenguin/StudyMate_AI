@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSubjects } from "@/context/SubjectsContext";
 import { detectFileType, extractFileText, makeStudyFile } from "@/lib/files";
 import { saveBlob } from "@/lib/fileBlobs";
+import { cloudUploadFile } from "@/lib/cloud";
 
 /**
  * 파일 업로드 + 텍스트 추출 오케스트레이션.
@@ -31,6 +32,8 @@ export function useFileUpload(subjectId: string) {
       addFile(subjectId, record);
       // 원본 파일을 IndexedDB 에 저장 (PDF 원본 미리보기용). 실패해도 진행.
       await saveBlob(record.id, file);
+      // 로그인 상태면 원본을 클라우드(Storage)에도 올려 다른 기기에서 볼 수 있게 한다.
+      await cloudUploadFile(record.id, file);
       updateFile(subjectId, record.id, { status: "extracting" });
 
       const res = await extractFileText(file); // 실패해도 throw 안 함

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getBlob } from "@/lib/fileBlobs";
+import { getBlobAnywhere } from "@/lib/fileBlobs";
 import type { StudyFile, SubjectRecord } from "@/types/study";
 
 /**
@@ -124,7 +124,7 @@ function PdfCanvas({
 
     async function render() {
       setState("loading");
-      const blob = await getBlob(file.id);
+      const blob = await getBlobAnywhere(file.id);
       if (cancelled) return;
       if (!blob) {
         setState("missing");

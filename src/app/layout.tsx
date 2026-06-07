@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import { SubjectsProvider } from "@/context/SubjectsContext";
 import AppShell from "@/components/AppShell";
 
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="min-h-screen bg-cream text-slate-800 antialiased">
-        <SubjectsProvider>
-          <AppShell>{children}</AppShell>
-        </SubjectsProvider>
+        <AuthProvider>
+          <SubjectsProvider>
+            <AppShell>{children}</AppShell>
+          </SubjectsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

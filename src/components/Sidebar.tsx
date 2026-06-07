@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
 import { useSubjects } from "@/context/SubjectsContext";
 import NewSubjectModal from "@/components/NewSubjectModal";
+import AccountButton from "@/components/AccountButton";
 import { daysUntil } from "@/lib/format";
 import { deleteBlob } from "@/lib/fileBlobs";
 import type { SubjectInput } from "@/types/study";
@@ -126,6 +127,9 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             </ul>
           )}
         </div>
+
+        {/* 계정 (구글 로그인 / 로그아웃) — Supabase 설정 시에만 표시 */}
+        <AccountButton />
       </div>
 
       <NewSubjectModal

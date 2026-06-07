@@ -63,6 +63,23 @@ export async function getBlob(fileId: string): Promise<Blob | undefined> {
   }
 }
 
+/**
+ * 원본 파일을 어디서든 가져온다: 로컬 IndexedDB 우선, 없으면 클라우드(Storage).
+ * 클라우드에서 받아오면 다음을 위해 로컬에도 캐시한다.
+ * (다른 기기에서 업로드한 파일을 모바일/다른 PC 에서 볼 때 사용)
+ */
+export async function getBlobAnywhere(fileId: string): Promise<Blob | undefined> {
+  const local = await getBlob(fileId);
+  if (local) return local;
+  const { cloudDownloadFile } = await import("@/lib/cloud");
+  const remote = await cloudDownloadFile(fileId);
+  if (remote) {
+    void saveBlob(fileId, remote);
+    return remote;
+  }
+  return undefined;
+}
+
 /** 원본 파일 삭제 (best-effort). */
 export async function deleteBlob(fileId: string): Promise<void> {
   try {

@@ -69,6 +69,11 @@ export function listSubjects(): SubjectRecord[] {
   return readAll().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
+/** 전체 레코드를 통째로 교체 (클라우드 동기화 후 로컬 캐시 갱신용) */
+export function replaceAll(records: SubjectRecord[]): void {
+  writeAll(records.map(normalize));
+}
+
 export function getSubject(id: string): SubjectRecord | undefined {
   return readAll().find((s) => s.id === id);
 }
