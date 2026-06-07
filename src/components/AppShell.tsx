@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
+import TokenBadge from "@/components/TokenBadge";
 
 const COLLAPSE_KEY = "studymate.sidebarCollapsed";
 
@@ -30,6 +31,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen lg:flex">
+      {/* 오른쪽 위 토큰 사용량 코인 (전 화면 공통) */}
+      <TokenBadge />
+
       {/* 데스크톱 고정 사이드바 */}
       <aside
         className={`hidden shrink-0 border-r border-slate-200 bg-white transition-[width] duration-200 lg:block ${

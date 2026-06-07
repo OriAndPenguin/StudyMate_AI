@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">
+      <body className="min-h-screen bg-cream text-slate-800 antialiased">
         <SubjectsProvider>
           <AppShell>{children}</AppShell>
         </SubjectsProvider>

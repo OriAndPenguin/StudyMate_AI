@@ -70,6 +70,8 @@ export interface ResolvedSource {
   /** 어떤 근거로 결정됐는지 */
   origin: "file" | "all-files" | "manual" | "none";
   fileName?: string;
+  /** 결과 저장/조회용 스코프 키 (file:<id> / all / manual / none) */
+  key: string;
 }
 
 /**
@@ -94,6 +96,7 @@ export function resolveSource(
         label: f.name,
         origin: "file",
         fileName: f.name,
+        key: `file:${f.id}`,
       };
     }
   }
@@ -102,15 +105,15 @@ export function resolveSource(
     const text = extracted
       .map((f) => `# ${f.name}\n${f.extractedText}`)
       .join("\n\n");
-    return { text, label: "과목 전체 자료", origin: "all-files" };
+    return { text, label: "과목 전체 자료", origin: "all-files", key: "all" };
   }
 
   const manual = subject.sourceText ?? "";
   if (manual.trim().length > 0) {
-    return { text: manual, label: "직접 입력한 텍스트", origin: "manual" };
+    return { text: manual, label: "직접 입력한 텍스트", origin: "manual", key: "manual" };
   }
 
-  return { text: "", label: "자료 없음", origin: "none" };
+  return { text: "", label: "자료 없음", origin: "none", key: "none" };
 }
 
 /** 파일 메타데이터 레코드 생성 (업로드 직후 상태) */

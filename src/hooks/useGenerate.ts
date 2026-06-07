@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useSubjects } from "@/context/SubjectsContext";
 import { parseFetchError, toErrorMessage } from "@/lib/errors";
+import { addUsage } from "@/lib/usage";
 import type {
   GenerateResponse,
   GenerationKind,
   GenerationStatus,
+  QuestionGenerationOptions,
   StudyArtifacts,
 } from "@/types/study";
 
@@ -26,10 +28,12 @@ const INITIAL_STATUS: StatusMap = {
 export function useGenerate(params: {
   subjectId: string;
   getSourceText: () => string;
+  /** 결과를 저장할 소스 스코프 키 (file:<id> / all / manual) */
+  getScopeKey: () => string;
   subjectTitle: string;
   onGenerated?: (kind: GenerationKind) => void;
 }) {
-  const { subjectId, getSourceText, subjectTitle, onGenerated } = params;
+  const { subjectId, getSourceText, getScopeKey, subjectTitle, onGenerated } = params;
   const { saveArtifacts } = useSubjects();
 
   const [statuses, setStatuses] = useState<StatusMap>(INITIAL_STATUS);
@@ -40,13 +44,17 @@ export function useGenerate(params: {
     setStatuses((prev) => ({ ...prev, [kind]: status }));
   }
 
-  async function runOne(kind: GenerationKind, sourceText: string): Promise<boolean> {
+  async function runOne(
+    kind: GenerationKind,
+    sourceText: string,
+    questionOptions?: QuestionGenerationOptions
+  ): Promise<boolean> {
     setStatus(kind, "loading");
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, sourceText, subjectTitle }),
+        body: JSON.stringify({ kind, sourceText, subjectTitle, questionOptions }),
       });
 
       if (!res.ok) {
@@ -60,7 +68,8 @@ export function useGenerate(params: {
       else if (payload.kind === "questions") patch.questions = payload.data;
       else if (payload.kind === "flashcards") patch.flashcards = payload.data;
 
-      saveArtifacts(subjectId, patch);
+      saveArtifacts(subjectId, getScopeKey(), patch);
+      addUsage(payload.usage);
       setStatus(kind, "done");
       onGenerated?.(kind);
       return true;
@@ -80,13 +89,13 @@ export function useGenerate(params: {
     return true;
   }
 
-  async function generate(kind: GenerationKind) {
+  async function generate(kind: GenerationKind, questionOptions?: QuestionGenerationOptions) {
     if (busy) return;
     const sourceText = getSourceText();
     setError(null);
     if (!validate(sourceText)) return;
     setBusy(true);
-    await runOne(kind, sourceText);
+    await runOne(kind, sourceText, kind === "questions" ? questionOptions : undefined);
     setBusy(false);
   }
 

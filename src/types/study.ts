@@ -30,6 +30,8 @@ export interface Subject {
 
   /** 사용자가 입력한 공부 자료 원문 */
   sourceText?: string;
+  /** 학습 화면에서 사용자가 직접 작성하는 메모 */
+  studyNote?: string;
 
   /** 추후 Supabase Auth 연동용 (1차에서는 미사용) */
   ownerId?: string;
@@ -111,6 +113,13 @@ export interface QuestionSet {
   essay: Question[];
 }
 
+export interface QuestionGenerationOptions {
+  /** Total number of questions to generate. UI offers 10 / 20 / 30 / 40. */
+  totalCount: 10 | 20 | 30 | 40;
+  /** Number of essay questions to include. Must be 0-5. */
+  essayCount: number;
+}
+
 /* ------------------------------------------------------------------ */
 /* 4) 플래시카드 (Flashcard)                                           */
 /* ------------------------------------------------------------------ */
@@ -119,6 +128,18 @@ export interface Flashcard {
   id: string;
   front: string;
   back: string;
+}
+
+export interface QuizHistoryItem {
+  id: string;
+  subjectId: string;
+  title: string;
+  generatedAt: ISODateString;
+  completedAt?: ISODateString;
+  questionCount: number;
+  answeredCount?: number;
+  correctCount?: number;
+  totalScored?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -178,7 +199,15 @@ export interface AIOutput {
 
 /** localStorage 통합 레코드: 과목 + 파일 + 결과 */
 export interface SubjectRecord extends Subject {
+  /** (레거시) 과목 단위 결과 — 하위호환용. 신규 저장은 artifactsBucket 사용 */
   artifacts: StudyArtifacts;
+  /**
+   * 소스별 AI 결과. key 규칙:
+   *  - `file:<fileId>` : 특정 파일 기준
+   *  - `all`           : 과목 전체 파일 합침
+   *  - `manual`        : 직접 입력 텍스트
+   */
+  artifactsBucket?: Record<string, StudyArtifacts>;
   /** 업로드된 학습 파일 (메타데이터 + 추출 텍스트만) */
   files: StudyFile[];
 }
@@ -196,6 +225,7 @@ export interface GenerateRequest {
   subjectTitle?: string;
   /** 어떤 파일/자료 기준인지 (로그/표시용, 선택) */
   fileName?: string;
+  questionOptions?: QuestionGenerationOptions;
 }
 
 /** 파일 텍스트 추출 API 응답 */
@@ -207,12 +237,20 @@ export interface ExtractResponse {
   notice?: string;
 }
 
+/** AI 토큰 사용량 */
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  /** 모델 단가 기준 추정 비용(USD). 단가 미정 모델이면 생략 */
+  costUsd?: number;
+}
+
 /** kind 에 따라 data 의 실제 타입이 달라진다 */
 export type GenerateResponse =
-  | { kind: "summary"; data: SummaryNote }
-  | { kind: "terms"; data: TermItem[] }
-  | { kind: "questions"; data: QuestionSet }
-  | { kind: "flashcards"; data: Flashcard[] };
+  | { kind: "summary"; data: SummaryNote; usage?: TokenUsage }
+  | { kind: "terms"; data: TermItem[]; usage?: TokenUsage }
+  | { kind: "questions"; data: QuestionSet; usage?: TokenUsage }
+  | { kind: "flashcards"; data: Flashcard[]; usage?: TokenUsage };
 
 export interface GenerateErrorResponse {
   error: string;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SubjectInput } from "@/types/study";
 
 export default function NewSubjectModal({
@@ -15,8 +16,21 @@ export default function NewSubjectModal({
   const [title, setTitle] = useState("");
   const [examDate, setExamDate] = useState("");
   const [description, setDescription] = useState("");
+  const [mounted, setMounted] = useState(false);
 
-  if (!open) return null;
+  useEffect(() => setMounted(true), []);
+
+  // 열려 있는 동안 배경 스크롤 잠금 (모달 뒤 화면이 위로 밀리는 문제 방지)
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  if (!open || !mounted) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,15 +45,15 @@ export default function NewSubjectModal({
     setDescription("");
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:items-center"
       onClick={onClose}
     >
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl"
+        className="my-8 w-full max-w-md rounded-3xl bg-white p-6 shadow-xl"
       >
         <h2 className="text-xl font-bold text-slate-900">새 과목 만들기</h2>
         <p className="mt-1 text-sm text-slate-500">
@@ -95,6 +109,7 @@ export default function NewSubjectModal({
           </button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 }

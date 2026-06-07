@@ -11,6 +11,7 @@ import type {
   GenerateRequest,
   GenerateResponse,
   GenerationKind,
+  QuestionGenerationOptions,
 } from "@/types/study";
 
 export const runtime = "nodejs";
@@ -18,6 +19,19 @@ export const maxDuration = 60;
 
 const VALID_KINDS: GenerationKind[] = ["summary", "terms", "questions", "flashcards"];
 const MIN_LENGTH = 20;
+const VALID_QUESTION_TOTALS = [10, 20, 30, 40] as const;
+
+function normalizeQuestionOptions(
+  options?: QuestionGenerationOptions
+): QuestionGenerationOptions {
+  const totalCount = VALID_QUESTION_TOTALS.includes(
+    options?.totalCount as (typeof VALID_QUESTION_TOTALS)[number]
+  )
+    ? options!.totalCount
+    : 10;
+  const essayCount = Math.min(5, Math.max(0, Math.floor(options?.essayCount ?? 0)));
+  return { totalCount, essayCount: Math.min(essayCount, totalCount) };
+}
 
 export async function POST(req: Request) {
   let body: GenerateRequest;
@@ -44,18 +58,30 @@ export async function POST(req: Request) {
   try {
     let response: GenerateResponse;
     switch (kind) {
-      case "summary":
-        response = { kind, data: await generateSummary(sourceText, subjectTitle) };
+      case "summary": {
+        const { data, usage } = await generateSummary(sourceText, subjectTitle);
+        response = { kind, data, usage };
         break;
-      case "terms":
-        response = { kind, data: await generateTerms(sourceText, subjectTitle) };
+      }
+      case "terms": {
+        const { data, usage } = await generateTerms(sourceText, subjectTitle);
+        response = { kind, data, usage };
         break;
-      case "questions":
-        response = { kind, data: await generateQuestions(sourceText, subjectTitle) };
+      }
+      case "questions": {
+        const { data, usage } = await generateQuestions(
+          sourceText,
+          subjectTitle,
+          normalizeQuestionOptions(body.questionOptions)
+        );
+        response = { kind, data, usage };
         break;
-      case "flashcards":
-        response = { kind, data: await generateFlashcards(sourceText, subjectTitle) };
+      }
+      case "flashcards": {
+        const { data, usage } = await generateFlashcards(sourceText, subjectTitle);
+        response = { kind, data, usage };
         break;
+      }
     }
     return NextResponse.json(response);
   } catch (err) {

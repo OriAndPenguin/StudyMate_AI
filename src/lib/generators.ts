@@ -1,23 +1,19 @@
 import type { GenerationKind, StudyArtifacts } from "@/types/study";
 
-/** 생성 종류별 메타데이터 (버튼 라벨 / 아이콘 / 탭 라벨 공용) */
 export interface GeneratorMeta {
   kind: GenerationKind;
-  /** 생성 버튼 라벨 */
   action: string;
-  /** 결과 탭 라벨 */
   tab: string;
   icon: string;
 }
 
 export const GENERATORS: GeneratorMeta[] = [
-  { kind: "summary", action: "요약노트 생성", tab: "요약", icon: "📝" },
-  { kind: "terms", action: "핵심 용어 정리", tab: "용어", icon: "📖" },
-  { kind: "questions", action: "예상문제 생성", tab: "문제", icon: "❓" },
-  { kind: "flashcards", action: "플래시카드 생성", tab: "카드", icon: "🃏" },
+  { kind: "summary", action: "요약 생성", tab: "요약", icon: "S" },
+  { kind: "terms", action: "용어 정리", tab: "용어", icon: "T" },
+  { kind: "questions", action: "퀴즈 생성", tab: "퀴즈", icon: "Q" },
+  { kind: "flashcards", action: "플래시카드 생성", tab: "카드", icon: "F" },
 ];
 
-/** 해당 종류의 결과가 이미 생성되어 있는지 */
 export function hasArtifact(artifacts: StudyArtifacts, kind: GenerationKind): boolean {
   switch (kind) {
     case "summary":

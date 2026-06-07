@@ -26,9 +26,13 @@ interface SubjectsContextValue {
   remove: (id: string) => void;
   updateInfo: (
     id: string,
-    patch: Partial<Pick<Subject, "title" | "examDate" | "description" | "sourceText">>
+    patch: Partial<Pick<Subject, "title" | "examDate" | "description" | "sourceText" | "studyNote">>
   ) => void;
-  saveArtifacts: (id: string, patch: Partial<StudyArtifacts>) => SubjectRecord | undefined;
+  saveArtifacts: (
+    id: string,
+    scopeKey: string,
+    patch: Partial<StudyArtifacts>
+  ) => SubjectRecord | undefined;
   addFile: (subjectId: string, file: StudyFile) => void;
   updateFile: (subjectId: string, fileId: string, patch: Partial<StudyFile>) => void;
   removeFile: (subjectId: string, fileId: string) => void;
@@ -83,8 +87,8 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const saveArtifacts = useCallback<SubjectsContextValue["saveArtifacts"]>(
-    (id, patch) => {
-      const updated = storage.saveArtifacts(id, patch);
+    (id, scopeKey, patch) => {
+      const updated = storage.saveArtifacts(id, scopeKey, patch);
       refresh();
       return updated;
     },

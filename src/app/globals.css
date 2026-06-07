@@ -76,7 +76,7 @@
   color: #0f172a;
 }
 .md-note a {
-  color: #0284c7; /* brand-600 */
+  color: #557fb8; /* brand-600 */
   text-decoration: underline;
 }
 .md-note hr {
@@ -99,7 +99,7 @@
   margin: 0.25rem 0;
 }
 .md-note li::marker {
-  color: #38bdf8; /* brand-400 */
+  color: #88aedb; /* brand-400 */
 }
 /* 체크리스트 (- [ ]) */
 .md-note ul.contains-task-list {
@@ -118,14 +118,14 @@
   margin-top: 0.35rem;
   width: 1rem;
   height: 1rem;
-  accent-color: #0284c7;
+  accent-color: #557fb8;
 }
 /* 인용구 = 시험 포인트 */
 .md-note blockquote {
   margin: 0.8rem 0;
   padding: 0.6rem 0.9rem;
-  border-left: 4px solid #38bdf8; /* brand-400 */
-  background: #f0f9ff; /* brand-50 */
+  border-left: 4px solid #88aedb; /* brand-400 */
+  background: #f4f8fd; /* brand-50 */
   border-radius: 0 0.5rem 0.5rem 0;
   color: #334155;
 }
@@ -134,7 +134,7 @@
 }
 .md-note blockquote p:first-child {
   font-weight: 700;
-  color: #0369a1; /* brand-700 */
+  color: #436594; /* brand-700 */
 }
 /* 코드 */
 .md-note code {
@@ -150,8 +150,8 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.82em;
   font-weight: 700;
-  color: #0369a1; /* brand-700 */
-  background: #e0f2fe; /* brand-100 */
+  color: #436594; /* brand-700 */
+  background: #e7f0fa; /* brand-100 */
   padding: 0.05rem 0.4rem;
   border-radius: 0.3rem;
   cursor: pointer;
@@ -159,8 +159,8 @@
   transition: all 0.15s;
 }
 .md-page-link:hover {
-  border-color: #38bdf8; /* brand-400 */
-  background: #bae6fd; /* brand-200 */
+  border-color: #88aedb; /* brand-400 */
+  background: #cfe1f3; /* brand-200 */
 }
 .md-note pre {
   background: #0f172a;
@@ -192,7 +192,7 @@
   vertical-align: top;
 }
 .md-note th {
-  background: #f0f9ff; /* brand-50 */
+  background: #f4f8fd; /* brand-50 */
   font-weight: 700;
   color: #0f172a;
 }

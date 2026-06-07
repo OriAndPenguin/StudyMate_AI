@@ -1,0 +1,13 @@
+
+> studymate-ai@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3001
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1788ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.8s (510 modules)
+ GET / 200 in 3074ms
